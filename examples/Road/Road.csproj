@@ -15,6 +15,7 @@
         <PackageReference Include="OneOf" Version="3.0.243"/>
         <PackageReference Include="RLMatrix" Version="0.1.0"/>
         <PackageReference Include="RLMatrix.WinformsChart" Version="0.1.0"/>
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
     </ItemGroup>
 
 </Project>
