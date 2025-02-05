@@ -23,26 +23,28 @@ namespace Road.Predict.Wpf {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged {
-        private float _followerPosition;
-        private float _leaderPosition;
+        private float _followerSpeed;
+        private float _leaderSpeed;
 
         private float _accelerateLeader;
         private float _distance;
+        
+        private const float DefAcceleration = 2.0f;
 
         public MainWindow() {
             InitializeComponent();
 
             DataContext = this;
 
-            Task.Run(Run);
         }
 
         private void Run() {
             
-            DQN1D dqn1d = new DQN1D("dqn1d", 3, 1024, 1);
-            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_6\policy.pt");
+            DQN1D dqn1d = new DQN1D("dqn1d", 3, 1024, 3);
+            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_6 - Copy\policy.pt");
+            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_9\policy.pt");
             
-            GameState gameState = new GameState(20, 50, 10, 10);
+            GameState gameState = new GameState(20, 30, 10, 10);
             
             // RoadEnvironment env = new();
             // env.Initialise();
@@ -54,7 +56,8 @@ namespace Road.Predict.Wpf {
             // dqnAgent.LoadAgent("C:\\Repos\\RL_Matrix\\examples\\Road\\bin\\Debug\\net6.0-windows\\racecar_6");
             
             while (true) {
-                //_accelerateLeader /= 2.0f;
+                _accelerateLeader /= 2.0f;
+                gameState.LeaderSpeed += _accelerateLeader;
 
                 torch.Tensor tensor = torch.tensor(new float[] {
                     gameState.LeaderSpeed,
@@ -62,26 +65,32 @@ namespace Road.Predict.Wpf {
                     gameState.Distance
                 });
                 
-                torch.Tensor actionTensor = dqn1d.forward(tensor);
-                torch.Tensor a = torch.nn.functional.tanh(actionTensor);
-                float[] data = a.data<float>().ToArray();
+                //torch.Tensor actionTensor = dqn1d.forward(tensor);
+                int action = (int) dqn1d.forward(tensor).argmax(1L).item<long>();
+                //torch.Tensor a = torch.nn.functional.tanh(actionTensor);
+                //float[] data = actionTensor.data<float>().ToArray();
 
+                float acceleration = (int)action switch {
+                    2 => DefAcceleration,
+                    1 => 0,
+                    _ => -DefAcceleration
+                };
                 
-                gameState.Action(0.1f, 1);
-                // LeaderPosition = currentState[0];
-                // FollowerPosition = currentState[1];
-                // Distance = currentState[2];
+                gameState.Action(0.001f, 1);
+                LeaderSpeed = gameState.LeaderSpeed;
+                FollowerSpeed = gameState.FollowerSpeed;
+                Distance = gameState.Distance;
             }
         }
 
-        public float FollowerPosition {
-            get => _followerPosition;
-            set => SetField(ref _followerPosition, value);
+        public float FollowerSpeed {
+            get => _followerSpeed;
+            set => SetField(ref _followerSpeed, value);
         }
 
-        public float LeaderPosition {
-            get => _leaderPosition;
-            set => SetField(ref _leaderPosition, value);
+        public float LeaderSpeed {
+            get => _leaderSpeed;
+            set => SetField(ref _leaderSpeed, value);
         }
 
         public float Distance {
@@ -108,6 +117,10 @@ namespace Road.Predict.Wpf {
 
         private void Break_OnClick(object sender, RoutedEventArgs e) {
             _accelerateLeader -= 0.5f;
+        }
+
+        private void Start_OnClick(object sender, RoutedEventArgs e) {
+            Task.Run(Run);
         }
     }
 }
