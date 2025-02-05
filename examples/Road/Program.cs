@@ -12,7 +12,7 @@ DQNAgentOptions opts = new(128, 10000, 0.99f, 1f, 0.05f, 50f, 0.005f, 1e-4f, cha
 IDQNNetProvider<float[]> netProvider = null!;
 //netProvider = new DQNNetProvider<float[]>(32);
 D2QNAgent<float[]> dqnAgent = new(opts, env, netProvider);
-for (int i = 0; i < 1000; i++) {
+for (int i = 0; i < 10000; i++) {
     dqnAgent.TrainEpisode();
     if (i % 100 == 0) {
         dqnAgent.SaveAgent($"racecar_{saveIndex++}", false);

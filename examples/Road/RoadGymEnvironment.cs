@@ -97,10 +97,10 @@ internal class RoadGymEnvironment : Gym.Envs.Env {
     public override NDArray Reset() {
         iterations = 0;
         _distance = new List<float>(100);
-        _gameState = new GameState(np.random.uniform(5f, 10f, np.float32),
-                                   np.random.uniform(35f, 40f, np.float32),
-                                   np.random.uniform(0f, 10f, np.float32),
-                                   np.random.uniform(0f, 5f, np.float32));
+        _gameState = new GameState(np.random.uniform(10f, 20f, np.float32),
+                                   np.random.uniform(5f, 40f, np.float32),
+                                   np.random.uniform(10f, 20f, np.float32),
+                                   np.random.uniform(0f, 35f, np.float32));
         return _gameState.ToNDArray();
     }
 

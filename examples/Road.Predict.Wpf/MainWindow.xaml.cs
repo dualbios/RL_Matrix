@@ -14,6 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using RLMatrix;
 using TorchSharp;
 using TorchSharp.Utils;
@@ -28,24 +31,35 @@ namespace Road.Predict.Wpf {
 
         private float _accelerateLeader;
         private float _distance;
-        
+        private float _acceleration;
+        private float _leaderPosition;
+        private float _followerPosition;
+
         private const float DefAcceleration = 2.0f;
 
         public MainWindow() {
             InitializeComponent();
 
-            DataContext = this;
+            // LeaderSpeedPlotView = new PlotModel { Title = "Leader Speed" };
+            // FollowerSpeedPlotView = new PlotModel { Title = "Follower Speed" };
+            // DistancePlotView = new PlotModel { Title = "Distance" };
+            // AccelerationPlotView = new PlotModel { Title = "Acceleration" };
+            //
+            // LeaderSpeedPlotView.Series.Add(new LineSeries());
+            // FollowerSpeedPlotView.Series.Add(new LineSeries());
+            // DistancePlotView.Series.Add(new LineSeries());
+            // AccelerationPlotView.Series.Add(new LineSeries());
 
+            DataContext = this;
         }
 
         private void Run() {
-            
             DQN1D dqn1d = new DQN1D("dqn1d", 3, 1024, 3);
-            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_6 - Copy\policy.pt");
-            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_9\policy.pt");
-            
+            // dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_6 - Copy\policy.pt");
+            dqn1d.load(@"C:\Repos\RL_Matrix\examples\Road\bin\Debug\net6.0-windows\racecar_2\policy.pt");
+
             GameState gameState = new GameState(20, 30, 10, 10);
-            
+
             // RoadEnvironment env = new();
             // env.Initialise();
             //
@@ -54,7 +68,7 @@ namespace Road.Predict.Wpf {
             // D2QNAgent<float[]> dqnAgent = new(opts, env, netProvider);
             //
             // dqnAgent.LoadAgent("C:\\Repos\\RL_Matrix\\examples\\Road\\bin\\Debug\\net6.0-windows\\racecar_6");
-            
+
             while (true) {
                 _accelerateLeader /= 2.0f;
                 gameState.LeaderSpeed += _accelerateLeader;
@@ -64,22 +78,34 @@ namespace Road.Predict.Wpf {
                     gameState.FollowerSpeed,
                     gameState.Distance
                 });
-                
-                //torch.Tensor actionTensor = dqn1d.forward(tensor);
-                int action = (int) dqn1d.forward(tensor).argmax(1L).item<long>();
+
+                torch.Tensor actionTensor = dqn1d.forward(tensor);
+                //int action = (int) actionTensor.argmax(1L).item<long>();
                 //torch.Tensor a = torch.nn.functional.tanh(actionTensor);
-                //float[] data = actionTensor.data<float>().ToArray();
+                float[] data = actionTensor.data<float>().ToArray();
+                int action = data.Select((x, index) => (index, absValue: Math.Abs(x)))
+                                 .MaxBy(pair => pair.absValue)
+                                 .index;
 
                 float acceleration = (int)action switch {
                     2 => DefAcceleration,
                     1 => 0,
                     _ => -DefAcceleration
                 };
-                
-                gameState.Action(0.001f, 1);
+
+                gameState.Action(0.001f, acceleration);
+                Acceleration = acceleration;
                 LeaderSpeed = gameState.LeaderSpeed;
                 FollowerSpeed = gameState.FollowerSpeed;
                 Distance = gameState.Distance;
+
+                LeaderPosition = gameState.LeaderPosition;
+                FollowerPosition = gameState.FollowerPosition;
+                
+                // (LeaderSpeedPlotView.Series[0] as LineSeries).Points.Add(new DataPoint(DateTimeAxis.ToDouble(DateTime.Now), LeaderSpeed));
+                // (FollowerSpeedPlotView.Series[0] as LineSeries).Points.Add(new DataPoint(DateTimeAxis.ToDouble(DateTime.Now), FollowerSpeed));
+                // (DistancePlotView.Series[0] as LineSeries).Points.Add(new DataPoint(DateTimeAxis.ToDouble(DateTime.Now), Distance));
+                // (AccelerationPlotView.Series[0] as LineSeries).Points.Add(new DataPoint(DateTimeAxis.ToDouble(DateTime.Now), Acceleration));
             }
         }
 
@@ -97,6 +123,27 @@ namespace Road.Predict.Wpf {
             get => _distance;
             set => SetField(ref _distance, value);
         }
+
+        public float Acceleration {
+            get => _acceleration;
+            set => SetField(ref _acceleration, value);
+        }
+
+        public float LeaderPosition {
+            get => _leaderPosition;
+            set => SetField(ref _leaderPosition, value);
+        }
+
+        public float FollowerPosition {
+            get => _followerPosition;
+            set => SetField(ref _followerPosition, value);
+        }
+
+        // public PlotModel LeaderSpeedPlotView { get; set; }
+        // public PlotModel FollowerSpeedPlotView { get; set; }
+        // public PlotModel DistancePlotView { get; set; }
+        // public PlotModel AccelerationPlotView { get; set; }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

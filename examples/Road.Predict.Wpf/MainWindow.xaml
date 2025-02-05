@@ -5,36 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Road.Predict.Wpf"
         mc:Ignorable="d"
+        xmlns:oxy="http://oxyplot.org/wpf"
         Title="MainWindow" Height="450" Width="800">
     <DockPanel LastChildFill="True">
-        <StackPanel Orientation="Vertical">
-            <Button Click="Start_OnClick" Content="Start"/>
-            <Button Click="Accelerate_OnClick" Content="Accelerate"/>
-            <Button Click="Break_OnClick" Content="Break"/>
-            <HeaderedContentControl Header="Distance">
-                <TextBlock Text="{Binding Distance}" />
-            </HeaderedContentControl>
-            <HeaderedContentControl Header="Leader Speed">
-                <TextBlock Text="{Binding LeaderSpeed}" />
-            </HeaderedContentControl>
-            <HeaderedContentControl Header="Follower Speed">
-                <TextBlock Text="{Binding FollowerSpeed}" />
-            </HeaderedContentControl>
-        </StackPanel>
-        <Canvas>
-            <Ellipse Width="5" Height="5" Fill="Blue">
-                <Canvas.Left>
-                    <Binding Path="FollowerSpeed" />
-                </Canvas.Left>
-                <Canvas.Top>50</Canvas.Top>
-            </Ellipse>
+        <DockPanel LastChildFill="True"
+                   DockPanel.Dock="Top">
+            <StackPanel Orientation="Vertical"
+                        DockPanel.Dock="Right">
+                <Button Click="Start_OnClick" Content="Start" />
+                <Button Click="Accelerate_OnClick" Content="Accelerate" />
+                <Button Click="Break_OnClick" Content="Break" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical">
+                <HeaderedContentControl Header="Distance">
+                    <TextBlock Text="{Binding Distance}" />
+                </HeaderedContentControl>
+                <HeaderedContentControl Header="Leader Speed">
+                    <TextBlock Text="{Binding LeaderSpeed}" />
+                </HeaderedContentControl>
+                <HeaderedContentControl Header="Follower Speed">
+                    <TextBlock Text="{Binding FollowerSpeed}" />
+                </HeaderedContentControl>
+                <HeaderedContentControl Header="Acceleration">
+                    <TextBlock Text="{Binding Acceleration}" />
+                </HeaderedContentControl>
+            </StackPanel>
+        </DockPanel>
+        <Border DockPanel.Dock="Top"
+                BorderBrush="Black"
+                BorderThickness="1">
+            <Canvas Height="50" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Ellipse Width="16" Height="16" Fill="Blue">
+                    <Canvas.Left>
+                        <Binding Path="FollowerPosition" />
+                    </Canvas.Left>
+                    <Canvas.Top>0</Canvas.Top>
+                </Ellipse>
 
-            <Ellipse Width="5" Height="5" Fill="Red">
-                <Canvas.Left>
-                    <Binding Path="LeaderSpeed" />
-                </Canvas.Left>
-                <Canvas.Top>150</Canvas.Top>
-            </Ellipse>
-        </Canvas>
+                <Ellipse Width="16" Height="16" Fill="Red">
+                    <Canvas.Left>
+                        <Binding Path="LeaderPosition" />
+                    </Canvas.Left>
+                    <Canvas.Top>0</Canvas.Top>
+                </Ellipse>
+            </Canvas>
+        </Border>
+        <!-- <Grid> -->
+        <!--     <Grid.RowDefinitions> -->
+        <!--         <RowDefinition Height="*" /> -->
+        <!--         <RowDefinition Height="*" /> -->
+        <!--         <RowDefinition Height="*" /> -->
+        <!--         <RowDefinition Height="*" /> -->
+        <!--     </Grid.RowDefinitions> -->
+        <!--     <oxy:PlotView Grid.Row="0" Model="{Binding LeaderSpeedPlotView}" /> -->
+        <!--     <oxy:PlotView Grid.Row="1" Model="{Binding FollowerSpeedPlotView}" /> -->
+        <!--     <oxy:PlotView Grid.Row="2" Model="{Binding DistancePlotView}" /> -->
+        <!--     <oxy:PlotView Grid.Row="3" Model="{Binding AccelerationPlotView}" /> -->
+        <!-- </Grid> -->
     </DockPanel>
 </Window>
